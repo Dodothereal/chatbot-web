@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import FileUpload from './FileUpload';
+import { MessageCircle, PlusCircle, Send, FileText, Bot, User, Loader } from 'lucide-react';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -145,7 +146,6 @@ export default function ChatInterface() {
                 updateConversation(finalMessages);
 
             } else {
-                // Handle other file types or show error
                 const errorMessages = [...messages, {
                     role: 'assistant',
                     content: 'Sorry, currently only PDF files are supported for processing.'
@@ -222,71 +222,98 @@ export default function ChatInterface() {
     };
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen bg-gradient-to-br from-gray-900 to-gray-800">
             {/* Conversation History Sidebar */}
-            <div className="w-64 bg-gray-50 border-r">
-                <div className="p-4">
+            <div className="w-72 bg-gray-800 border-r border-gray-700 flex flex-col">
+                <div className="p-4 border-b border-gray-700 bg-gray-900">
+                    <h1 className="text-xl font-bold text-white mb-4 flex items-center">
+                        <MessageCircle className="w-6 h-6 mr-2" />
+                        Conversations
+                    </h1>
                     <button
                         onClick={createNewConversation}
-                        className="w-full mb-4 bg-blue-500 text-white rounded-lg py-2 hover:bg-blue-600 transition-colors"
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg py-2.5 px-4 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
                     >
+                        <PlusCircle className="w-5 h-5" />
                         New Chat
                     </button>
-                    <div className="space-y-2">
-                        {conversations.map((conv) => (
-                            <button
-                                key={conv.id}
-                                onClick={() => selectConversation(conv)}
-                                className={`w-full p-2 text-left rounded-lg transition-colors ${
-                                    currentConversationId === conv.id
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : 'hover:bg-gray-100'
-                                }`}
-                            >
-                                <p className="font-medium truncate">{conv.title || 'New Chat'}</p>
-                                <p className="text-xs text-gray-500">
-                                    {new Date(conv.timestamp).toLocaleString()}
-                                </p>
-                            </button>
-                        ))}
-                    </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                    {conversations.map((conv) => (
+                        <button
+                            key={conv.id}
+                            onClick={() => selectConversation(conv)}
+                            className={`w-full p-3 text-left rounded-lg transition-all duration-200 ${
+                                currentConversationId === conv.id
+                                    ? 'bg-gradient-to-r from-blue-600/20 to-blue-700/20 text-blue-100'
+                                    : 'text-gray-300 hover:bg-gray-700'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <MessageCircle className="w-4 h-4" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate">{conv.title || 'New Chat'}</p>
+                                    <p className="text-xs text-gray-400 truncate">
+                                        {new Date(conv.timestamp).toLocaleString()}
+                                    </p>
+                                </div>
+                            </div>
+                        </button>
+                    ))}
                 </div>
             </div>
 
             {/* Chat Interface */}
-            <div className="flex-1 flex flex-col bg-white">
-                {/* File Upload Section */}
-                <div className="p-4 border-b">
-                    <FileUpload
-                        onFileSelect={handleFileSelect}
-                        disabled={isLoading}
-                    />
-                </div>
-
+            <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-800 to-gray-900">
                 {/* Messages Section */}
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-6" style={{ scrollBehavior: 'smooth' }}>
                     {messages.map((message, index) => (
                         <div
                             key={index}
-                            className={`mb-4 ${
-                                message.role === 'user' ? 'text-right' : 'text-left'
+                            className={`mb-6 flex ${
+                                message.role === 'user' ? 'justify-end' : 'justify-start'
                             }`}
                         >
                             <div
-                                className={`inline-block max-w-[80%] p-3 rounded-lg ${
-                                    message.role === 'user'
-                                        ? 'bg-blue-500 text-white rounded-br-none'
-                                        : 'bg-gray-100 text-black rounded-bl-none'
+                                className={`flex items-start max-w-[80%] space-x-3 ${
+                                    message.role === 'user' ? 'flex-row-reverse space-x-reverse' : 'flex-row'
                                 }`}
                             >
-                                <span className="whitespace-pre-wrap">{message.content}</span>
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                    message.role === 'user'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-600 text-white'
+                                }`}>
+                                    {message.role === 'user'
+                                        ? <User className="w-5 h-5" />
+                                        : <Bot className="w-5 h-5" />
+                                    }
+                                </div>
+                                <div
+                                    className={`p-4 rounded-2xl ${
+                                        message.role === 'user'
+                                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-tr-none'
+                                            : 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-100 rounded-tl-none'
+                                    }`}
+                                >
+                                    {message.fileInfo ? (
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FileText className="w-4 h-4" />
+                                            <span className="text-sm opacity-90">
+                        {message.fileInfo.name}
+                      </span>
+                                        </div>
+                                    ) : null}
+                                    <span className="whitespace-pre-wrap">{message.content}</span>
+                                </div>
                             </div>
                         </div>
                     ))}
                     {isLoading && (
-                        <div className="text-center py-2">
-                            <div className="inline-block px-4 py-2 bg-gray-100 rounded-lg">
-                                Thinking...
+                        <div className="flex justify-center py-4">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-gray-700 rounded-full text-gray-200">
+                                <Loader className="w-4 h-4 animate-spin" />
+                                <span>Processing...</span>
                             </div>
                         </div>
                     )}
@@ -294,29 +321,36 @@ export default function ChatInterface() {
                 </div>
 
                 {/* Input Section */}
-                <form onSubmit={handleSubmit} className="p-4 border-t">
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Type your message..."
+                <div className="p-4 border-t border-gray-700 bg-gray-800/50">
+                    <form onSubmit={handleSubmit} className="flex gap-2">
+                        <FileUpload
+                            onFileSelect={handleFileSelect}
                             disabled={isLoading}
+                            compact={true}
                         />
-                        <button
-                            type="submit"
-                            className={`px-4 py-2 bg-blue-500 text-white rounded-lg transition-colors ${
-                                isLoading
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : 'hover:bg-blue-600 active:bg-blue-700'
-                            }`}
-                            disabled={isLoading}
-                        >
-                            Send
-                        </button>
-                    </div>
-                </form>
+                        <div className="flex-1 relative">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                className="w-full p-4 pr-16 bg-gray-700 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+                                placeholder="Type your message..."
+                                disabled={isLoading}
+                            />
+                            <button
+                                type="submit"
+                                className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all duration-200 ${
+                                    isLoading || !input.trim()
+                                        ? 'text-gray-400 cursor-not-allowed'
+                                        : 'text-blue-500 hover:text-blue-400'
+                                }`}
+                                disabled={isLoading || !input.trim()}
+                            >
+                                <Send className="w-6 h-6" />
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

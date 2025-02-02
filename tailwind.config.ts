@@ -14,7 +14,8 @@ module.exports = {
         }
       },
       animation: {
-        fadeIn: 'fadeIn 0.5s ease-out forwards'
+        fadeIn: 'fadeIn 0.5s ease-out forwards',
+        'spin-slow': 'spin 3s linear infinite',
       }
     },
   },
